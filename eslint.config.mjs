@@ -1,16 +1,77 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+
 import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import importPlugin from "eslint-plugin-import";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+  allConfig: js.configs.all,
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends(
+    "next/core-web-vitals",
+    "next/typescript",
+    "standard",
+    // "plugin:tailwindcss/recommended",
+    "prettier"
+  ),
+  // Explicitly register plugin-import and configure its resolver for TS path aliases
+  {
+    plugins: {
+      import: importPlugin,
+    },
+    settings: {
+      // Make plugin-import resolve TypeScript paths (including @/* alias)
+      "import/resolver": {
+        typescript: {
+          project: true,
+          alwaysTryTypes: true,
+        },
+        node: {
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
+        },
+      },
+    },
+    rules: {
+      // Commonly expected rules from plugin-import
+      "import/no-unresolved": "error",
+      "import/order": [
+        "warn",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            ["parent", "sibling", "index"],
+            "type",
+          ],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+          pathGroups: [
+            {
+              pattern: "@/**",
+              group: "internal",
+              position: "before",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["builtin"],
+        },
+      ],
+      "import/newline-after-import": ["warn", { count: 1 }],
+    },
+  },
+  {
+    rules: {
+      "no-undef": "off",
+    },
+  },
   {
     ignores: [
       "node_modules/**",
