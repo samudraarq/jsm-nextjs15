@@ -2,7 +2,6 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 
 import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,8 +9,6 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
 });
 
 const eslintConfig = [
@@ -43,28 +40,30 @@ const eslintConfig = [
       // Commonly expected rules from plugin-import
       "import/no-unresolved": "error",
       "import/order": [
-        "warn",
+        "error",
         {
           groups: [
             "builtin",
             "external",
             "internal",
-            ["parent", "sibling", "index"],
-            "type",
+            ["parent", "sibling"],
+            "index",
+            "object",
           ],
           "newlines-between": "always",
           alphabetize: { order: "asc", caseInsensitive: true },
           pathGroups: [
             {
-              pattern: "@/**",
-              group: "internal",
-              position: "before",
+              pattern: "@app/**",
+              group: "external",
+              position: "after",
             },
           ],
           pathGroupsExcludedImportTypes: ["builtin"],
         },
       ],
       "import/newline-after-import": ["warn", { count: 1 }],
+      "comma-dangle": "off",
     },
   },
   {
